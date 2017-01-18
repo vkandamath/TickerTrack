@@ -2,10 +2,13 @@ window.onload = function() {
 
 	// add rows for stocks that currently exist in storage
 	chrome.storage.sync.get("stocks", function(result) {
-		for (var i = 0; i < result.stocks.length; i++) {
-			// add row for stock
-			var stockHTML = "<div class='row stock-row' id='symbol-" + result.stocks[i] + "'><div class='stock-symbol'>" + result.stocks[i].toUpperCase() + "</div></div>";
-			$("#stocks").prepend(stockHTML);
+		if (result.stocks != undefined) {
+			for (var i = 0; i < result.stocks.length; i++) {
+				// add row for stock
+				//var stockHTML = "<div class='stock-row' id='symbol-" + result.stocks[i] + "'><div class='stock-symbol'>" + result.stocks[i].toUpperCase() + "</div><div class='news-ticker'>hello world</div></div>";
+				var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + result.stocks[i].toUpperCase() + "</td><td>d</td></tr>";
+				$("#stocks").prepend(stockHTML);
+			}
 		}
 	});
 
@@ -13,18 +16,18 @@ window.onload = function() {
 	$("#enter-stock").keypress(function(e) {
 		// enter key
 		if (e.which == 13) {
-			startNewsRetrieval();
+			addStock();
 		}
 	});
 
 	$("#submit-stock").click(function(){
-		startNewsRetrieval();
+		addStock();
 	});
 
 }
 
 // get initial data for stock
-function startNewsRetrieval() {
+function addStock() {
 
 	// if nothing is entered, do nothing
 	if ($("#enter-stock").val() == "") {
@@ -63,7 +66,8 @@ function startNewsRetrieval() {
 						chrome.storage.sync.set({"stocks": newArr});
 
 						// add row for stock
-						var stockHTML = "<div class='row stock-row' id='symbol-" + stock + "'><div class='stock-symbol'>" + stock.toUpperCase() + "</div></div>";
+						//var stockHTML = "<div class='row stock-row' id='symbol-" + stock + "'><div class='stock-symbol'>" + stock.toUpperCase() + "</div><div class='news-ticker'><marquee direction='left'>Hello world</marquee></div></div>";
+						var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + stock.toUpperCase() + "</td><td>d</td></tr>";
 						$("#stocks").prepend(stockHTML);
 					}
 					else {
@@ -73,20 +77,24 @@ function startNewsRetrieval() {
 							chrome.storage.sync.set({"stocks": result.stocks});
 							
 							// add row for stock
-							var stockHTML = "<div class='row stock-row' id='symbol-" + stock + "'><div class='stock-symbol'>" + stock.toUpperCase() + "</div></div>";
+							//var stockHTML = "<div class='row stock-row' id='symbol-" + stock + "'><div class='stock-symbol'>" + stock.toUpperCase() + "</div><div class='news-ticker'><marquee direction='left'>Hello world</marquee></div></div>";
+							var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + stock.toUpperCase() + "</td><td>d</td></tr>";
 							$("#stocks").prepend(stockHTML);
+							startPollingNews(stock);
 						}
 						else {
 							alert("stock already exists");
 						}
 					}
-				
-					chrome.storage.sync.get("stocks", function(result) {
-						alert(JSON.stringify(result));
-					});
 
 				});
 			}
 		}
+	});
+}
+
+function startPollingNews(stock) {
+	chrome.runtime.sendMessage({greeting: "hello"}, function(response) {
+  		console.log(response);
 	});
 }
