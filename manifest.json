@@ -1,0 +1,12 @@
+{
+  "manifest_version": 2,
+  "name": "Stock News Aggregator",
+  "version": "1.0",
+  "description": "A chrome extension that allows users to get a summary of a news article or large block of text.",
+  "browser_action": {
+    "default_icon": "icon.png"
+  },
+  "background": {
+    "scripts": ["background.js"]
+  }
+}
