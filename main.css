@@ -1,14 +1,9 @@
-html {
-  position: relative;
-  min-height: 100%;
-}
 body {
-  margin-bottom: 60px;
   overflow: hidden;
 }
 
 #footer {
-  position: fixed;
+  position: absolute;
   width: 100%;
   bottom: 0;
   padding: 10px 10px 10px 10px;
@@ -21,4 +16,29 @@ body {
 
 #enter-stock::-webkit-input-placeholder {
   text-transform: none;
+}
+
+#stocks {
+  position: absolute;
+  top: 0px;
+  bottom: 50px;
+  overflow: auto;
+  width: 100%;
+}
+
+.stock-row {
+  margin-bottom: 1px;
+}
+
+
+.stock-symbol {
+  display: inline-block;
+  height: 100%;
+  background-color: #5cb85c;
+  font-size: 40px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  color: white;
 }
