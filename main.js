@@ -4,11 +4,11 @@ window.onload = function() {
 	chrome.storage.sync.get("stocks", function(result) {
 		if (result.stocks != undefined) {
 			console.log(JSON.stringify(result.stocks));
-			
-			for (var i = 0; i < result.stocks.length; i++) {
+
+			for (var key in result.stocks) {
 				// add row for stock
-				//var stockHTML = "<div class='stock-row' id='symbol-" + result.stocks[i] + "'><div class='stock-symbol'>" + result.stocks[i].toUpperCase() + "</div><div class='news-ticker'>hello world</div></div>";
-				var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + result.stocks[i].symbol.toUpperCase() + "</td><td>d</td></tr>";
+				//var stockHTML = "<div class='stock-row' id='symbol-" + result.stocks[key] + "'><div class='stock-symbol'>" + result.stocks[key].toUpperCase() + "</div><div class='news-ticker'>hello world</div></div>";
+				var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + key.toUpperCase() + "</td><td>d</td></tr>";
 				$("#stocks").prepend(stockHTML);
 			}
 		}
@@ -26,11 +26,13 @@ window.onload = function() {
 		addStock();
 	});
 
-/*
+
+	console.log("establishing connection with background.js");
 	var port = chrome.runtime.connect({name: "messages"});
+
 	port.onMessage.addListener(function(msg) {
-		console.log(msg.count);
-	});*/
+		console.log(msg.message);
+	});
 
 }
 
