@@ -3,7 +3,7 @@ window.onload = function() {
 	// add rows for stocks that currently exist in storage
 	chrome.storage.sync.get("stocks", function(result) {
 		if (result.stocks != undefined) {
-			console.log(JSON.stringify(result.stocks));
+			//console.log(JSON.stringify(result.stocks));
 
 			for (var key in result.stocks) {
 				// add row for stock
@@ -59,8 +59,9 @@ function addStock() {
 
 
 	// send get request
-	var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + stock + "&region=US&lang=en-US";
-	console.log(url);
+	//var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + stock + "&region=US&lang=en-US";
+	var url = "http://localhost:1234/Documents/test.xml";
+
 	$.get(url, function(data, status) {
 		if (status == "success") {
 			var xmlChannel = data.firstChild.firstChild;
@@ -88,7 +89,7 @@ function addStock() {
 
 						var latestNews = getMostRecentNews(xmlItems);
 
-						existingStocks[stock] = new Stock(stock, lastUpdatedOn, latestNews);
+						existingStocks[stock] = new Stock(stock, new Date(lastUpdatedOn), latestNews);
 
 						chrome.storage.sync.set({"stocks": existingStocks});
 
@@ -104,7 +105,7 @@ function addStock() {
 							var latestNews = getMostRecentNews(xmlItems);
 
 							// store stock
-							result.stocks[stock] = new Stock(stock, lastUpdatedOn, latestNews);
+							result.stocks[stock] = new Stock(stock, new Date(lastUpdatedOn), latestNews);
 
 							chrome.storage.sync.set({"stocks": result.stocks});
 

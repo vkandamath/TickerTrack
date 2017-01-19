@@ -1,10 +1,10 @@
 // Called when the user clicks on the browser action.
 chrome.browserAction.onClicked.addListener(function(tab) {
 
-//	chrome.storage.sync.clear();
 
 	// Send a message to the active tab
 	chrome.tabs.create({url: 'main.html'});
+
 
 
 	chrome.runtime.onConnect.addListener(function(port) {
@@ -13,11 +13,11 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 
 
 		//delay time in ms
-		//var delayTime = 1000;
+		var delayTime = 3000;
 
 		//start polling yahoo
-		//setInterval(fetchData, delayTime);
-		fetchData();
+		setInterval(fetchData, delayTime);
+		//fetchData();
 
 		port.onMessage.addListener(function(msg) {
 			console.log(msg.message);
@@ -29,56 +29,68 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 
 
 function fetchData() {
-	console.log("fetching data");
+	console.log("================================= Fetching data");
 	chrome.storage.sync.get("stocks", function(result) {
 		var stocks = result.stocks;
-		console.log(stocks);
 
 		for (var key in stocks) {
-			var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + key + "&region=US&lang=en-US";
-			console.log("key: " + key);
+			console.log("Fetching for stock: " + key);
+
+			//var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + key + "&region=US&lang=en-US";
+			var url = "http://localhost:1234/Documents/test.xml";
 
 			// define closure to ensure that correct key is used for get request
 			(function (key) {
 				$.get(url, function(data, status) {
+					console.log("Get");
+					
 					if (status == "success") {
-						console.log(status + " for key: " + key)
+
+						var xmlChannel = data.firstChild.firstChild;
+						var xmlItems = xmlChannel.getElementsByTagName("item");
+						var latestBuildDateString = xmlChannel.getElementsByTagName("lastBuildDate")[0].textContent;
+						latestBuildDate = new Date(latestBuildDateString);
+						console.log(latestBuildDateString);
+
+						var storedBuildDate = new Date(stocks[key].lastUpdatedOn);
+
+						if (latestBuildDate > storedBuildDate) {
+							console.log("Update stock: " + key);
+							console.log("Old update: " + storedBuildDate);
+							console.log("New update: " + latestBuildDate);
+							//update last update datetime
+							stocks[key].lastUpdatedOn = latestBuildDateString;
+							console.log(stocks);
+							
+							var recentNews = getMostRecentNews(xmlItems);
+							stocks[key].newsLinks = recentNews;
+							chrome.storage.sync.set({"stocks": stocks});
+						}
+						/*
+						else if (latestBuildDate.getTime() == storedBuildDate.getTime()) {
+							console.log("Don't update: " + key);
+						}*/
 					}
 				});
 			})(key);
 
-
-			/*
-			$.ajax({
-		        url: url,
-		        async: false,
-				success: function(data){
-					var xmlChannel = data.firstChild.firstChild;
-					var lastBuildDate = new Date(xmlChannel.getElementsByTagName("lastBuildDate")[0].textContent);
-
-					var recordedBuildDate = new Date(stocks[key].lastUpdatedOn);
-
-					if (lastBuildDate > recordedBuildDate) {
-						//update build date
-						//update news links
-						console.log(key);
-						console.log(lastBuildDate);
-						console.log(recordedBuildDate);
-					}
-		        }
-			})*/
 		}
 	});
 }
 
-/*
-		for (var key in stocks) {
-			var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + key + "&region=US&lang=en-US";
-			console.log("key: " + key);
-			$.get(url, function(data, status) {
-				if (status == "success") {
-					console.log(status + " for key: " + key);		
-				}
-			});
-		}
-		*/
+// takes in list of item nodes, return list of tuples(dictionary) with article title and link
+function getMostRecentNews(xmlItems) {
+	var latestNews = new Array();
+
+	// note: rss feed's articles are already sorted by date
+	var topNArticles = 5;
+	for (var i = 0; i < topNArticles; i++) {
+		var item = xmlItems[i];
+		var title = item.getElementsByTagName("title")[0].textContent;
+		var link = item.getElementsByTagName("link")[0].textContent;
+		var tuple = {title: title, link: link};
+		latestNews.push(tuple);
+	}
+
+	return latestNews;
+}
