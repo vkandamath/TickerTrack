@@ -24,6 +24,11 @@ window.onload = function() {
 		addStock();
 	});
 
+	var port = chrome.runtime.connect({name: "knockknock"});
+	port.onMessage.addListener(function(msg) {
+		console.log(msg.count);
+	});
+
 }
 
 // get initial data for stock
@@ -60,27 +65,26 @@ function addStock() {
 				chrome.storage.sync.get("stocks", function(result) {
 					//alert(result.stocks);
 					if (result.stocks == undefined) {
-						var newArr = new Array()
-						newArr.push(stock);
-
-						chrome.storage.sync.set({"stocks": newArr});
-
 						// add row for stock
 						//var stockHTML = "<div class='row stock-row' id='symbol-" + stock + "'><div class='stock-symbol'>" + stock.toUpperCase() + "</div><div class='news-ticker'><marquee direction='left'>Hello world</marquee></div></div>";
 						var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + stock.toUpperCase() + "</td><td>d</td></tr>";
 						$("#stocks").prepend(stockHTML);
+
+						var newArr = new Array()
+						newArr.push(stock);
+						chrome.storage.sync.set({"stocks": newArr});
 					}
 					else {
 						if (!result.stocks.includes(stock)) {
-							// store stock
-							result.stocks.push(stock);
-							chrome.storage.sync.set({"stocks": result.stocks});
-							
 							// add row for stock
 							//var stockHTML = "<div class='row stock-row' id='symbol-" + stock + "'><div class='stock-symbol'>" + stock.toUpperCase() + "</div><div class='news-ticker'><marquee direction='left'>Hello world</marquee></div></div>";
 							var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + stock.toUpperCase() + "</td><td>d</td></tr>";
 							$("#stocks").prepend(stockHTML);
-							startPollingNews(stock);
+
+							// store stock
+							result.stocks.push(stock);
+							chrome.storage.sync.set({"stocks": result.stocks});
+							
 						}
 						else {
 							alert("stock already exists");
@@ -93,8 +97,3 @@ function addStock() {
 	});
 }
 
-function startPollingNews(stock) {
-	chrome.runtime.sendMessage({greeting: "hello"}, function(response) {
-  		console.log(response);
-	});
-}
