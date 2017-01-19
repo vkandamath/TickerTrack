@@ -3,10 +3,12 @@ window.onload = function() {
 	// add rows for stocks that currently exist in storage
 	chrome.storage.sync.get("stocks", function(result) {
 		if (result.stocks != undefined) {
+			console.log(JSON.stringify(result.stocks));
+			
 			for (var i = 0; i < result.stocks.length; i++) {
 				// add row for stock
 				//var stockHTML = "<div class='stock-row' id='symbol-" + result.stocks[i] + "'><div class='stock-symbol'>" + result.stocks[i].toUpperCase() + "</div><div class='news-ticker'>hello world</div></div>";
-				var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + result.stocks[i].toUpperCase() + "</td><td>d</td></tr>";
+				var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + result.stocks[i].symbol.toUpperCase() + "</td><td>d</td></tr>";
 				$("#stocks").prepend(stockHTML);
 			}
 		}
@@ -24,10 +26,11 @@ window.onload = function() {
 		addStock();
 	});
 
-	var port = chrome.runtime.connect({name: "knockknock"});
+/*
+	var port = chrome.runtime.connect({name: "messages"});
 	port.onMessage.addListener(function(msg) {
 		console.log(msg.count);
-	});
+	});*/
 
 }
 
@@ -42,6 +45,15 @@ function addStock() {
 
 	var stock = $("#enter-stock").val().toLowerCase();
 	$("#enter-stock").val("");
+
+	//declaring class for Stock
+	class Stock {
+		constructor(symbol, lastUpdatedOn, newsLinks) {
+			this.symbol = symbol;
+			this.lastUpdatedOn = lastUpdatedOn;
+			this.newsLinks = newsLinks;
+		}
+	}
 
 
 	// send get request
@@ -70,20 +82,31 @@ function addStock() {
 						var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + stock.toUpperCase() + "</td><td>d</td></tr>";
 						$("#stocks").prepend(stockHTML);
 
-						var newArr = new Array()
-						newArr.push(stock);
-						chrome.storage.sync.set({"stocks": newArr});
+						var existingStocks = {}
+
+						var latestNews = getMostRecentNews(xmlItems);
+
+						existingStocks[stock] = new Stock(stock, lastUpdatedOn, latestNews);
+
+						chrome.storage.sync.set({"stocks": existingStocks});
+
+						console.log(JSON.stringify(existingStocks));
 					}
 					else {
-						if (!result.stocks.includes(stock)) {
+						if (!(stock in result.stocks)) {
 							// add row for stock
 							//var stockHTML = "<div class='row stock-row' id='symbol-" + stock + "'><div class='stock-symbol'>" + stock.toUpperCase() + "</div><div class='news-ticker'><marquee direction='left'>Hello world</marquee></div></div>";
 							var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + stock.toUpperCase() + "</td><td>d</td></tr>";
 							$("#stocks").prepend(stockHTML);
 
+							var latestNews = getMostRecentNews(xmlItems);
+
 							// store stock
-							result.stocks.push(stock);
+							result.stocks[stock] = new Stock(stock, lastUpdatedOn, latestNews);
+
 							chrome.storage.sync.set({"stocks": result.stocks});
+
+							console.log(JSON.stringify(result.stocks));
 							
 						}
 						else {
@@ -97,3 +120,19 @@ function addStock() {
 	});
 }
 
+// takes in list of item nodes, return list of tuples(dictionary) with article title and link
+function getMostRecentNews(xmlItems) {
+	var latestNews = new Array();
+
+	// note: rss feed's articles are already sorted by date
+	var topNArticles = 5;
+	for (var i = 0; i < topNArticles; i++) {
+		var item = xmlItems[i];
+		var title = item.getElementsByTagName("title")[0].textContent;
+		var link = item.getElementsByTagName("link")[0].textContent;
+		var tuple = {title: title, link: link};
+		latestNews.push(tuple);
+	}
+
+	return latestNews;
+}
