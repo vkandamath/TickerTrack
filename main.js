@@ -6,9 +6,19 @@ window.onload = function() {
 			//console.log(JSON.stringify(result.stocks));
 
 			for (var key in result.stocks) {
+
+				var stock = result.stocks[key];
+
 				// add row for stock
 				//var stockHTML = "<div class='stock-row' id='symbol-" + result.stocks[key] + "'><div class='stock-symbol'>" + result.stocks[key].toUpperCase() + "</div><div class='news-ticker'>hello world</div></div>";
-				var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + key.toUpperCase() + "</td><td>d</td></tr>";
+				var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + key.toUpperCase() + "</td><td class='marquee-col' id='news-" + key.toLowerCase() + "'><marquee scrollamount='15'>";
+					
+				for (var i = 0; i < stock.newsLinks.length; i++) {
+					var newsLink = stock.newsLinks[i];
+					stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + newsLink.title + "</a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp";
+				}
+
+				stockHTML += "</marquee></td></tr>";
 				$("#stocks").prepend(stockHTML);
 			}
 		}
@@ -31,7 +41,23 @@ window.onload = function() {
 	var port = chrome.runtime.connect({name: "messages"});
 
 	port.onMessage.addListener(function(msg) {
-		console.log(msg.message);
+		if (msg.message == "update stock") {
+			alert('updating stock: ' + msg.stock);
+			var stockToUpdate = msg.stock;
+
+			//retrieve updated news
+			chrome.storage.sync.get("stocks", function(result) {
+				var stockObj = result.stocks[stockToUpdate];
+				var newsLinks = stockObj.newsLinks;
+				var linksHTML = "";
+				for (var i = 0; i < newsLinks.length; i++) {
+					var newsLink = stock.newsLinks[i];
+					linksHTML += stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + newsLink.title + "</a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp";
+				}
+				$("#news-"+stockToUpdate + " marquee").val(linksHTML);
+
+			});
+		}
 	});
 
 }
@@ -60,7 +86,7 @@ function addStock() {
 
 	// send get request
 	//var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + stock + "&region=US&lang=en-US";
-	var url = "http://localhost:1234/Documents/test.xml";
+	var url = "http://localhost:1234/" + stock + ".xml";
 
 	$.get(url, function(data, status) {
 		if (status == "success") {
@@ -82,34 +108,55 @@ function addStock() {
 					if (result.stocks == undefined) {
 						// add row for stock
 						//var stockHTML = "<div class='row stock-row' id='symbol-" + stock + "'><div class='stock-symbol'>" + stock.toUpperCase() + "</div><div class='news-ticker'><marquee direction='left'>Hello world</marquee></div></div>";
-						var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + stock.toUpperCase() + "</td><td>d</td></tr>";
-						$("#stocks").prepend(stockHTML);
+						//var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + stock.toUpperCase() + "</td><td>d</td></tr>";
+						//$("#stocks").prepend(stockHTML);
 
 						var existingStocks = {}
 
 						var latestNews = getMostRecentNews(xmlItems);
 
-						existingStocks[stock] = new Stock(stock, new Date(lastUpdatedOn), latestNews);
+						existingStocks[stock] = new Stock(stock, lastUpdatedOn, latestNews);
 
 						chrome.storage.sync.set({"stocks": existingStocks});
 
-						console.log(JSON.stringify(existingStocks));
+						var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + stock.toUpperCase() + "</td><td class='marquee-col' id='news-" + stock.toLowerCase() + "'><marquee scrollamount='15'>";
+
+						for (var i = 0; i < latestNews.length; i++) {
+							var newsLink = latestNews[i];
+							stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + newsLink.title + "</a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp";
+						}
+
+						stockHTML += "</marquee></td></tr>";
+						$("#stocks").prepend(stockHTML);
+
+
 					}
 					else {
 						if (!(stock in result.stocks)) {
 							// add row for stock
 							//var stockHTML = "<div class='row stock-row' id='symbol-" + stock + "'><div class='stock-symbol'>" + stock.toUpperCase() + "</div><div class='news-ticker'><marquee direction='left'>Hello world</marquee></div></div>";
-							var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + stock.toUpperCase() + "</td><td>d</td></tr>";
-							$("#stocks").prepend(stockHTML);
+							//var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + stock.toUpperCase() + "</td><td>d</td></tr>";
+							//$("#stocks").prepend(stockHTML);
 
 							var latestNews = getMostRecentNews(xmlItems);
 
 							// store stock
-							result.stocks[stock] = new Stock(stock, new Date(lastUpdatedOn), latestNews);
+							result.stocks[stock] = new Stock(stock, lastUpdatedOn, latestNews);
 
 							chrome.storage.sync.set({"stocks": result.stocks});
 
 							console.log(JSON.stringify(result.stocks));
+
+
+							var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + stock.toUpperCase() + "</td><td class='marquee-col' id='news-" + stock.toLowerCase() + "'><marquee scrollamount='15'>";
+
+							for (var i = 0; i < latestNews.length; i++) {
+								var newsLink = latestNews[i];
+								stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + newsLink.title + "</a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp";
+							}
+
+							stockHTML += "</marquee></td></tr>";
+							$("#stocks").prepend(stockHTML);
 							
 						}
 						else {

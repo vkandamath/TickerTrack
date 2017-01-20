@@ -2,21 +2,19 @@
 chrome.browserAction.onClicked.addListener(function(tab) {
 
 
+	//chrome.storage.sync.clear();
+
 	// Send a message to the active tab
 	chrome.tabs.create({url: 'main.html'});
 
-
-
 	chrome.runtime.onConnect.addListener(function(port) {
 		console.log("connected with main.js, can send/receive messages now");
-
-
 
 		//delay time in ms
 		var delayTime = 3000;
 
 		//start polling yahoo
-		setInterval(fetchData, delayTime);
+		setInterval(fetchData, delayTime, port);
 		//fetchData();
 
 		port.onMessage.addListener(function(msg) {
@@ -28,21 +26,19 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 });
 
 
-function fetchData() {
-	console.log("================================= Fetching data");
+function fetchData(port) {
+	console.log("================================= Fetching data ====================================");
 	chrome.storage.sync.get("stocks", function(result) {
 		var stocks = result.stocks;
 
 		for (var key in stocks) {
-			console.log("Fetching for stock: " + key);
 
 			//var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + key + "&region=US&lang=en-US";
-			var url = "http://localhost:1234/Documents/test.xml";
+			var url = "http://localhost:1234/" + key + ".xml";
 
 			// define closure to ensure that correct key is used for get request
 			(function (key) {
 				$.get(url, function(data, status) {
-					console.log("Get");
 					
 					if (status == "success") {
 
@@ -50,21 +46,24 @@ function fetchData() {
 						var xmlItems = xmlChannel.getElementsByTagName("item");
 						var latestBuildDateString = xmlChannel.getElementsByTagName("lastBuildDate")[0].textContent;
 						latestBuildDate = new Date(latestBuildDateString);
-						console.log(latestBuildDateString);
 
 						var storedBuildDate = new Date(stocks[key].lastUpdatedOn);
 
+						console.log(".............. stock: " + key + " .............");
+						console.log("old date: " + storedBuildDate);
+						console.log("new date: " + latestBuildDate);
+
 						if (latestBuildDate > storedBuildDate) {
 							console.log("Update stock: " + key);
-							console.log("Old update: " + storedBuildDate);
-							console.log("New update: " + latestBuildDate);
 							//update last update datetime
 							stocks[key].lastUpdatedOn = latestBuildDateString;
-							console.log(stocks);
 							
 							var recentNews = getMostRecentNews(xmlItems);
 							stocks[key].newsLinks = recentNews;
 							chrome.storage.sync.set({"stocks": stocks});
+
+							// send message to client to update its stock news
+							port.postMessage({message: "update stock", stock: key});
 						}
 						/*
 						else if (latestBuildDate.getTime() == storedBuildDate.getTime()) {
