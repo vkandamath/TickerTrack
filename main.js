@@ -1,7 +1,7 @@
 window.onload = function() {
 
 	// add rows for stocks that currently exist in storage
-	chrome.storage.sync.get("stocks", function(result) {
+	chrome.storage.local.get("stocks", function(result) {
 		if (result.stocks != undefined) {
 
 			for (var key in result.stocks) {
@@ -9,18 +9,40 @@ window.onload = function() {
 				var stock = result.stocks[key];
 
 				// add row for stock
-				var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + key.toUpperCase() + "</td><td class='marquee-col' id='news-" + key.toLowerCase() + "'><marquee scrollamount='15'>";
+				var stockHTML = "<tr class='stock-row'><td class='stock-symbol'><span>" + key.toUpperCase() + "</span></td><td class='marquee-col' id='news-" + key.toLowerCase() + "'><div class='marquee'>";
 					
 				for (var i = 0; i < stock.newsLinks.length; i++) {
 					var newsLink = stock.newsLinks[i];
-					stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + newsLink.title + "</a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp";
+					stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + newsLink.title + "</a>";
 				}
 
-				stockHTML += "</marquee></td></tr>";
+				stockHTML += "</div></td></tr>";
 				$("#stocks").prepend(stockHTML);
+
 			}
+
+					 $('.marquee').marquee({
+		    duration: 10000,
+		    startVisible: true,
+		    duplicated: true,
+		    delayBeforeStart: 0,
+		    pauseOnHover: true
+		  });
 		}
 	});
+
+
+	$("#stocks").on('click', '.stock-symbol', function() {
+
+		var stock = $(this).eq($(this).index()).text();
+		
+		// remove td 
+		$(this).parent().remove();
+
+		// removes stock from memory
+		deleteStock(stock.toLowerCase());
+	});
+
 
 	// entering stock and hitting enter
 	$("#enter-stock").keypress(function(e) {
@@ -38,19 +60,35 @@ window.onload = function() {
 
 	port.onMessage.addListener(function(msg) {
 		if (msg.message == "update stock") {
-			alert('updating stock: ' + msg.stock);
 			var stockToUpdate = msg.stock;
 
 			//retrieve updated news
-			chrome.storage.sync.get("stocks", function(result) {
+			chrome.storage.local.get("stocks", function(result) {
 				var stockObj = result.stocks[stockToUpdate];
 				var newsLinks = stockObj.newsLinks;
-				var linksHTML = "";
-				for (var i = 0; i < newsLinks.length; i++) {
-					var newsLink = stock.newsLinks[i];
-					linksHTML += stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + newsLink.title + "</a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp";
+
+				// remove old marquee
+				$('#news-' + stockToUpdate).val('');
+
+				// update and add new marquee
+				var marqueeHTML = "<div class='marquee'>";
+					
+				for (var i = 0; i < stockObj.newsLinks.length; i++) {
+					var newsLink = stockObj.newsLinks[i];
+					marqueeHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + newsLink.title + "</a>";
 				}
-				$("#news-"+stockToUpdate + " marquee").val(linksHTML);
+
+				marqueeHTML += "</div>";
+
+				$("#news-" + stockToUpdate.toLowerCase()).html(marqueeHTML);
+
+				$('#news-' + stockToUpdate + ' .marquee').marquee({
+							    duration: 10000,
+							    startVisible: true,
+							    duplicated: true,
+							    delayBeforeStart: 0,
+							    pauseOnHover: true
+				});
 
 			});
 		}
@@ -58,12 +96,19 @@ window.onload = function() {
 
 }
 
+// removes stock from memory
+function deleteStock(stock) {
+	chrome.storage.local.get("stocks", function(result) {
+		delete result.stocks[stock];
+		chrome.storage.local.set({"stocks": result.stocks});
+	});
+}
+
 // get initial data for stock
 function addStock() {
 
 	// if nothing is entered, do nothing
 	if ($("#enter-stock").val() == "") {
-		alert("enter something");
 		return;
 	}
 
@@ -88,7 +133,7 @@ function addStock() {
 			var xmlTitle = xmlChannel.firstChild;
 
 			if (xmlTitle.textContent == "Yahoo! Finance: RSS feed not found") {
-				alert("invalid stock");
+				alert("Invalid stock symbol");
 				return;
 			}
 			else {
@@ -96,8 +141,8 @@ function addStock() {
 				var lastUpdatedOn = xmlChannel.getElementsByTagName("lastBuildDate")[0].textContent;
 
 				// store stock
-				chrome.storage.sync.get("stocks", function(result) {
-					
+				chrome.storage.local.get("stocks", function(result) {
+					console.log("storing");
 					if (result.stocks == undefined) {
 
 						var existingStocks = {}
@@ -106,17 +151,28 @@ function addStock() {
 
 						existingStocks[stock] = new Stock(stock, lastUpdatedOn, latestNews);
 
-						chrome.storage.sync.set({"stocks": existingStocks});
+						chrome.storage.local.set({"stocks": existingStocks});
 
-						var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + stock.toUpperCase() + "</td><td class='marquee-col' id='news-" + stock.toLowerCase() + "'><marquee scrollamount='15'>";
+						var stockHTML = "<tr class='stock-row'><td class='stock-symbol'><span>" + stock.toUpperCase() + "</span></td><td class='marquee-col' id='news-" + stock.toLowerCase() + "'><div class='marquee'>";
+					
 
 						for (var i = 0; i < latestNews.length; i++) {
 							var newsLink = latestNews[i];
-							stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + newsLink.title + "</a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp";
+							stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + newsLink.title + "</a>";
 						}
 
 						stockHTML += "</marquee></td></tr>";
 						$("#stocks").prepend(stockHTML);
+
+							$('#news-' + stock + ' .marquee').marquee({
+							    duration: 30000,
+							    startVisible: true,
+							    duplicated: true,
+							    delayBeforeStart: 0,
+							    pauseOnHover: true
+							  });
+
+
 					}
 					else {
 						if (!(stock in result.stocks)) {
@@ -126,21 +182,31 @@ function addStock() {
 							// store stock
 							result.stocks[stock] = new Stock(stock, lastUpdatedOn, latestNews);
 
-							chrome.storage.sync.set({"stocks": result.stocks});
+							chrome.storage.local.set({"stocks": result.stocks});
 
-							var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + stock.toUpperCase() + "</td><td class='marquee-col' id='news-" + stock.toLowerCase() + "'><marquee scrollamount='15'>";
+							var stockHTML = "<tr class='stock-row'><td class='stock-symbol'><span>" + stock.toUpperCase() + "</span></td><td class='marquee-col' id='news-" + stock.toLowerCase() + "'><div class='marquee'>";
+							
 
 							for (var i = 0; i < latestNews.length; i++) {
 								var newsLink = latestNews[i];
-								stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + newsLink.title + "</a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp";
+								stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + newsLink.title + "</a>";
 							}
 
 							stockHTML += "</marquee></td></tr>";
 							$("#stocks").prepend(stockHTML);
+
+							$('#news-' + stock + ' .marquee').marquee({
+							    duration: 10000,
+							    startVisible: true,
+							    duplicated: true,
+							    delayBeforeStart: 0,
+							    pauseOnHover: true
+							  });
+
 							
 						}
 						else {
-							alert("stock already exists");
+							alert("Stock symbol already displayed");
 						}
 					}
 
@@ -166,3 +232,5 @@ function getMostRecentNews(xmlItems) {
 
 	return latestNews;
 }
+
+

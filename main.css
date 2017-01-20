@@ -1,4 +1,4 @@
-body {
+html, body {
   overflow: hidden;
 }
 
@@ -29,39 +29,93 @@ body {
   border-spacing: 0 1px;
 }
 
-
-
 .stock-symbol {
+  padding-left: 10px;
+  padding-bottom: 10px;
+  padding-top: 10px;
+  padding-right: 10px;
   background-color: #5cb85c;
   color: white;
+  text-align: center;
+  width: 107px;
 }
+
+.stock-symbol:hover {
+  background-color: #d9534f;
+  cursor: pointer;
+
+}
+
+.stock-symbol:hover span {
+  display: none;
+
+}
+
+.stock-symbol:hover:before {
+  content: url(trash-icon.png);
+
+}
+
 
 .stock-news {
   width: 100%;
 }
 
 td {
-  padding-left: 10px;
-  padding-bottom: 10px;
-  padding-top: 10px;
-  padding-right: 10px;
   border: none;
   font-size: 24px;
   margin-bottom: 20px;
 }
 
-td:last-child {
-  width: 100%;
+.newslink {
+  color: red;
+  margin-left: 30px;
+  margin-right: 30px;
 }
 
-
-
-.newslink {
+.newslink:hover {
   color: red;
 }
 
 .newslink:visited {
-  color: black;
+  color: white;
 }
 
+.container-fluid {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+.marquee-col {
+  background-color: black;
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+.navbar-header {
+  text-align: center;
+  width: 100%;
+  padding: 15px;
+}
+
+.container-fluid>.navbar-collapse, .container-fluid>.navbar-header, .container>.navbar-collapse, .container>.navbar-header {
+  margin-right: 0px;
+  margin-left: 0px;
+}
+
+.navbar {
+  margin-bottom: 0px;
+}
+
+.navbar-default .navbar-brand {
+  color: black;
+}
+.navbar-brand {
+  float:none;
+}
+
+.marquee {
+  overflow: hidden;
+  background: none;
+}
 

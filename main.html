@@ -5,16 +5,26 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Stock News Aggregator</title>
-    <script src="jquery-3.1.1.min.js"></script>
-    <script src="main.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" href="main.css">
+    <script src="jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="jquery.marquee.min.js"></script>
+    <script src="main.js"></script>
   </head>
   <body>
 
+<!--
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="">Realtime Stock News Aggregator</a>
+        </div>
+      </div>
+    </nav> -->
 
-    <div class="stocks-container"><table id="stocks" border="0"></table></div>
-
+    <div class="container-fluid">
+      <div class="stocks-container"><table id="stocks" border="0" style="table-layout: fixed; width: 100%"></table></div>
+    </div>
 
     <div id="footer">
       <div class="input-group input-group-sm">

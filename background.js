@@ -1,6 +1,7 @@
 // Called when the user clicks on the browser action.
 chrome.browserAction.onClicked.addListener(function(tab) {
 
+
 	// chrome.storage.sync.clear();
 
 	// Send a message to the active tab
@@ -24,7 +25,7 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 
 
 function fetchData(port) {
-	chrome.storage.sync.get("stocks", function(result) {
+	chrome.storage.local.get("stocks", function(result) {
 		var stocks = result.stocks;
 
 		for (var key in stocks) {
@@ -35,6 +36,7 @@ function fetchData(port) {
 			// define closure to ensure that correct key is used for get request
 			(function (key) {
 				$.get(url, function(data, status) {
+					console.log("Sending get for: " + key);
 					
 					if (status == "success") {
 
@@ -52,7 +54,7 @@ function fetchData(port) {
 							
 							var recentNews = getMostRecentNews(xmlItems);
 							stocks[key].newsLinks = recentNews;
-							chrome.storage.sync.set({"stocks": stocks});
+							chrome.storage.local.set({"stocks": stocks});
 
 							// send message to client to update its stock news
 							port.postMessage({message: "update stock", stock: key});
