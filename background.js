@@ -1,21 +1,18 @@
 // Called when the user clicks on the browser action.
 chrome.browserAction.onClicked.addListener(function(tab) {
 
-
-	//chrome.storage.sync.clear();
+	// chrome.storage.sync.clear();
 
 	// Send a message to the active tab
 	chrome.tabs.create({url: 'main.html'});
 
 	chrome.runtime.onConnect.addListener(function(port) {
-		console.log("connected with main.js, can send/receive messages now");
 
-		//delay time in ms
+		// delay time in ms
 		var delayTime = 3000;
 
-		//start polling yahoo
+		// start polling yahoo
 		setInterval(fetchData, delayTime, port);
-		//fetchData();
 
 		port.onMessage.addListener(function(msg) {
 			console.log(msg.message);
@@ -27,14 +24,13 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 
 
 function fetchData(port) {
-	console.log("================================= Fetching data ====================================");
 	chrome.storage.sync.get("stocks", function(result) {
 		var stocks = result.stocks;
 
 		for (var key in stocks) {
 
-			//var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + key + "&region=US&lang=en-US";
-			var url = "http://localhost:1234/" + key + ".xml";
+			var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + key + "&region=US&lang=en-US";
+			//var url = "http://localhost:1234/" + key + ".xml";
 
 			// define closure to ensure that correct key is used for get request
 			(function (key) {
@@ -49,10 +45,6 @@ function fetchData(port) {
 
 						var storedBuildDate = new Date(stocks[key].lastUpdatedOn);
 
-						console.log(".............. stock: " + key + " .............");
-						console.log("old date: " + storedBuildDate);
-						console.log("new date: " + latestBuildDate);
-
 						if (latestBuildDate > storedBuildDate) {
 							console.log("Update stock: " + key);
 							//update last update datetime
@@ -65,10 +57,7 @@ function fetchData(port) {
 							// send message to client to update its stock news
 							port.postMessage({message: "update stock", stock: key});
 						}
-						/*
-						else if (latestBuildDate.getTime() == storedBuildDate.getTime()) {
-							console.log("Don't update: " + key);
-						}*/
+
 					}
 				});
 			})(key);

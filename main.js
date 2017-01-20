@@ -3,14 +3,12 @@ window.onload = function() {
 	// add rows for stocks that currently exist in storage
 	chrome.storage.sync.get("stocks", function(result) {
 		if (result.stocks != undefined) {
-			//console.log(JSON.stringify(result.stocks));
 
 			for (var key in result.stocks) {
 
 				var stock = result.stocks[key];
 
 				// add row for stock
-				//var stockHTML = "<div class='stock-row' id='symbol-" + result.stocks[key] + "'><div class='stock-symbol'>" + result.stocks[key].toUpperCase() + "</div><div class='news-ticker'>hello world</div></div>";
 				var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + key.toUpperCase() + "</td><td class='marquee-col' id='news-" + key.toLowerCase() + "'><marquee scrollamount='15'>";
 					
 				for (var i = 0; i < stock.newsLinks.length; i++) {
@@ -36,8 +34,6 @@ window.onload = function() {
 		addStock();
 	});
 
-
-	console.log("establishing connection with background.js");
 	var port = chrome.runtime.connect({name: "messages"});
 
 	port.onMessage.addListener(function(msg) {
@@ -83,16 +79,13 @@ function addStock() {
 		}
 	}
 
-
-	// send get request
-	//var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + stock + "&region=US&lang=en-US";
-	var url = "http://localhost:1234/" + stock + ".xml";
+	var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + stock + "&region=US&lang=en-US";
+	//var url = "http://localhost:1234/" + stock + ".xml";
 
 	$.get(url, function(data, status) {
 		if (status == "success") {
 			var xmlChannel = data.firstChild.firstChild;
 			var xmlTitle = xmlChannel.firstChild;
-			//alert(xmlTitle.textContent);
 
 			if (xmlTitle.textContent == "Yahoo! Finance: RSS feed not found") {
 				alert("invalid stock");
@@ -104,12 +97,8 @@ function addStock() {
 
 				// store stock
 				chrome.storage.sync.get("stocks", function(result) {
-					//alert(result.stocks);
+					
 					if (result.stocks == undefined) {
-						// add row for stock
-						//var stockHTML = "<div class='row stock-row' id='symbol-" + stock + "'><div class='stock-symbol'>" + stock.toUpperCase() + "</div><div class='news-ticker'><marquee direction='left'>Hello world</marquee></div></div>";
-						//var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + stock.toUpperCase() + "</td><td>d</td></tr>";
-						//$("#stocks").prepend(stockHTML);
 
 						var existingStocks = {}
 
@@ -128,15 +117,9 @@ function addStock() {
 
 						stockHTML += "</marquee></td></tr>";
 						$("#stocks").prepend(stockHTML);
-
-
 					}
 					else {
 						if (!(stock in result.stocks)) {
-							// add row for stock
-							//var stockHTML = "<div class='row stock-row' id='symbol-" + stock + "'><div class='stock-symbol'>" + stock.toUpperCase() + "</div><div class='news-ticker'><marquee direction='left'>Hello world</marquee></div></div>";
-							//var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + stock.toUpperCase() + "</td><td>d</td></tr>";
-							//$("#stocks").prepend(stockHTML);
 
 							var latestNews = getMostRecentNews(xmlItems);
 
@@ -144,9 +127,6 @@ function addStock() {
 							result.stocks[stock] = new Stock(stock, lastUpdatedOn, latestNews);
 
 							chrome.storage.sync.set({"stocks": result.stocks});
-
-							console.log(JSON.stringify(result.stocks));
-
 
 							var stockHTML = "<tr class='stock-row'><td class='stock-symbol'>" + stock.toUpperCase() + "</td><td class='marquee-col' id='news-" + stock.toLowerCase() + "'><marquee scrollamount='15'>";
 
