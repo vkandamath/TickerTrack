@@ -7,3 +7,6 @@ A chrome extension that aggregates financial news from Yahoo Finance in realtime
 3. Click "Load unpacked extension...".
 4. Select source folder of extension.
 5. Click on icon for extension in top right corner of browser.
+
+## Preview
+<img src="https://github.com/vkandamath/stock-news-aggregator-extension/blob/master/screenshot.png">
