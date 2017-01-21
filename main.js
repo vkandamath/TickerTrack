@@ -169,7 +169,7 @@ function addStock() {
 						$("#stocks").prepend(stockHTML);
 
 							$('#news-' + stock + ' .marquee').marquee({
-							    duration: 30000,
+							    duration: 10000,
 							    startVisible: true,
 							    duplicated: true,
 							    delayBeforeStart: 0,
@@ -230,6 +230,12 @@ function getMostRecentNews(xmlItems) {
 		var item = xmlItems[i];
 		var title = item.getElementsByTagName("title")[0].textContent;
 		var link = item.getElementsByTagName("link")[0].textContent;
+
+		// removes [$$] from beginning of some news titles
+		if (title.substring(0,5) == '[$$] ') {
+			title = title.substring(5);
+		}
+
 		var tuple = {title: title, link: link};
 		latestNews.push(tuple);
 	}
