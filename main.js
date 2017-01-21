@@ -156,8 +156,8 @@ function addStock() {
 		}
 	}
 
-	//var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + stock + "&region=US&lang=en-US";
-	var url = "http://localhost:1234/" + stock + ".xml";
+	var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + stock + "&region=US&lang=en-US";
+	//var url = "http://localhost:1234/" + stock + ".xml";
 
 	$.get(url, function(data, status) {
 		if (status == "success") {

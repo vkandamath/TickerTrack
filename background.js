@@ -30,8 +30,8 @@ function fetchData(port) {
 
 		for (var key in stocks) {
 
-			//var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + key + "&region=US&lang=en-US";
-			var url = "http://localhost:1234/" + key + ".xml";
+			var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + key + "&region=US&lang=en-US";
+			//var url = "http://localhost:1234/" + key + ".xml";
 
 			// define closure to ensure that correct key is used for get request
 			(function (key) {
