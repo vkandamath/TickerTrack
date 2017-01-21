@@ -92,13 +92,13 @@ window.onload = function() {
 				$("#news-" + stockToUpdate.toLowerCase()).html(marqueeHTML);
 
 				// make new newslink flash in red to notify user of update
-				$(".firstChild").addClass("animated flash infinite");
-				$(".firstChild").css("color", "red");
+				$("#news-" + stockToUpdate + " .firstChild").addClass("animated flash infinite");
+				$("#news-" + stockToUpdate + " .firstChild").css("color", "red");
 
-				$(".firstChild").click(function() {
+				$("#news-" + stockToUpdate + " .firstChild").click(function() {
 					// make link appear visited once clicked
-					$(".firstChild").removeClass("animated flash infinite");
-					$(".firstChild").css("color", "white");
+					$("#news-" + stockToUpdate + " .firstChild").removeClass("animated flash infinite");
+					$("#news-" + stockToUpdate + " .firstChild").css("color", "white");
 				});
 
 
@@ -109,6 +109,18 @@ window.onload = function() {
 					delayBeforeStart: 0,
 					pauseOnHover: true
 				});
+
+	
+				//desktop notifications
+				var options = {
+					type: "basic",
+					title: "Stock News Notification",
+					iconUrl: "icon.png",
+					message: stockToUpdate.toUpperCase() + " was recently updated!",
+					isClickable: true,
+					requireInteraction: false
+				}
+				chrome.notifications.create(options);
 
 			});
 		}

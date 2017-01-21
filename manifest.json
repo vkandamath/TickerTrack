@@ -12,6 +12,7 @@
   "permissions": [
     "https://feeds.finance.yahoo.com/",
     "http://localhost:1234/Documents/",
-    "storage"
+    "storage",
+    "notifications"
   ]
 }
