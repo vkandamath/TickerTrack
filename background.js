@@ -30,8 +30,8 @@ function fetchData(port) {
 
 		for (var key in stocks) {
 
-			var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + key + "&region=US&lang=en-US";
-			//var url = "http://localhost:1234/" + key + ".xml";
+			//var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + key + "&region=US&lang=en-US";
+			var url = "http://localhost:1234/" + key + ".xml";
 
 			// define closure to ensure that correct key is used for get request
 			(function (key) {
@@ -74,10 +74,21 @@ function getMostRecentNews(xmlItems) {
 
 	// note: rss feed's articles are already sorted by date
 	var topNArticles = 5;
+	if (xmlItems.length < topNArticles) {
+		topNArticles = xmlItems.length;
+	}
+
+
 	for (var i = 0; i < topNArticles; i++) {
 		var item = xmlItems[i];
 		var title = item.getElementsByTagName("title")[0].textContent;
 		var link = item.getElementsByTagName("link")[0].textContent;
+
+		// removes [$$] from beginning of some news titles
+		if (title.substring(0,5) == '[$$] ') {
+			title = title.substring(5);
+		}
+
 		var tuple = {title: title, link: link};
 		latestNews.push(tuple);
 	}

@@ -10,10 +10,10 @@ window.onload = function() {
 
 				// add row for stock
 				var stockHTML = "<tr class='stock-row'><td class='stock-symbol'><span>" + key.toUpperCase() + "</span></td><td class='marquee-col' id='news-" + key.toLowerCase() + "'><div class='marquee'>";
-					
+
 				for (var i = 0; i < stock.newsLinks.length; i++) {
 					var newsLink = stock.newsLinks[i];
-					stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + newsLink.title + "</a>";
+					stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + (i+1) + ") " + newsLink.title + "</a>";
 				}
 
 				stockHTML += "</div></td></tr>";
@@ -22,11 +22,11 @@ window.onload = function() {
 			}
 
 			$('.marquee').marquee({
-			    duration: 10000,
-			    startVisible: true,
-			    duplicated: true,
-			    delayBeforeStart: 0,
-			    pauseOnHover: true
+				duration: 10000,
+				startVisible: true,
+				duplicated: true,
+				delayBeforeStart: 0,
+				pauseOnHover: true
 			});
 		}
 	});
@@ -76,22 +76,38 @@ window.onload = function() {
 
 				// update and add new marquee
 				var marqueeHTML = "<div class='marquee'>";
-					
+
 				for (var i = 0; i < stockObj.newsLinks.length; i++) {
 					var newsLink = stockObj.newsLinks[i];
-					marqueeHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + newsLink.title + "</a>";
+					if (i == 0) {
+						marqueeHTML += "<a target='_blank' class='newslink firstChild' href='" + newsLink.link + "'>" + (i+1) + ") " + newsLink.title + "</a>";
+					}
+					else {
+						marqueeHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + (i+1) + ") " + newsLink.title + "</a>";
+					}
 				}
 
 				marqueeHTML += "</div>";
 
 				$("#news-" + stockToUpdate.toLowerCase()).html(marqueeHTML);
 
+				// make new newslink flash in red to notify user of update
+				$(".firstChild").addClass("animated flash infinite");
+				$(".firstChild").css("color", "red");
+
+				$(".firstChild").click(function() {
+					// make link appear visited once clicked
+					$(".firstChild").removeClass("animated flash infinite");
+					$(".firstChild").css("color", "white");
+				});
+
+
 				$('#news-' + stockToUpdate + ' .marquee').marquee({
-							    duration: 10000,
-							    startVisible: true,
-							    duplicated: true,
-							    delayBeforeStart: 0,
-							    pauseOnHover: true
+					duration: 10000,
+					startVisible: true,
+					duplicated: true,
+					delayBeforeStart: 0,
+					pauseOnHover: true
 				});
 
 			});
@@ -128,8 +144,8 @@ function addStock() {
 		}
 	}
 
-	var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + stock + "&region=US&lang=en-US";
-	//var url = "http://localhost:1234/" + stock + ".xml";
+	//var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + stock + "&region=US&lang=en-US";
+	var url = "http://localhost:1234/" + stock + ".xml";
 
 	$.get(url, function(data, status) {
 		if (status == "success") {
@@ -158,28 +174,30 @@ function addStock() {
 						chrome.storage.local.set({"stocks": existingStocks});
 
 						var stockHTML = "<tr class='stock-row'><td class='stock-symbol'><span>" + stock.toUpperCase() + "</span></td><td class='marquee-col' id='news-" + stock.toLowerCase() + "'><div class='marquee'>";
-					
+
 
 						for (var i = 0; i < latestNews.length; i++) {
 							var newsLink = latestNews[i];
-							stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + newsLink.title + "</a>";
+							stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + (i+1) + ") " + newsLink.title + "</a>";
 						}
 
 						stockHTML += "</marquee></td></tr>";
 						$("#stocks").prepend(stockHTML);
 
-							$('#news-' + stock + ' .marquee').marquee({
-							    duration: 10000,
-							    startVisible: true,
-							    duplicated: true,
-							    delayBeforeStart: 0,
-							    pauseOnHover: true
-							  });
+						$('#news-' + stock + ' .marquee').marquee({
+							duration: 10000,
+							startVisible: true,
+							duplicated: true,
+							delayBeforeStart: 0,
+							pauseOnHover: true
+						});
 
 
 					}
 					else {
 						if (!(stock in result.stocks)) {
+
+							console.log(xmlItems);
 
 							var latestNews = getMostRecentNews(xmlItems);
 
@@ -193,19 +211,19 @@ function addStock() {
 
 							for (var i = 0; i < latestNews.length; i++) {
 								var newsLink = latestNews[i];
-								stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + newsLink.title + "</a>";
+								stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + (i+1) + ") " + newsLink.title + "</a>";
 							}
 
 							stockHTML += "</marquee></td></tr>";
 							$("#stocks").prepend(stockHTML);
 
 							$('#news-' + stock + ' .marquee').marquee({
-							    duration: 10000,
-							    startVisible: true,
-							    duplicated: true,
-							    delayBeforeStart: 0,
-							    pauseOnHover: true
-							  });
+								duration: 10000,
+								startVisible: true,
+								duplicated: true,
+								delayBeforeStart: 0,
+								pauseOnHover: true
+							});
 
 							
 						}
@@ -215,9 +233,9 @@ function addStock() {
 					}
 
 				});
-			}
-		}
-	});
+}
+}
+});
 }
 
 // takes in list of item nodes, return list of tuples(dictionary) with article title and link
@@ -226,8 +244,14 @@ function getMostRecentNews(xmlItems) {
 
 	// note: rss feed's articles are already sorted by date
 	var topNArticles = 5;
+	if (xmlItems.length < topNArticles) {
+		topNArticles = xmlItems.length;
+	}
+
 	for (var i = 0; i < topNArticles; i++) {
+		console.log(i);
 		var item = xmlItems[i];
+		console.log(item);
 		var title = item.getElementsByTagName("title")[0].textContent;
 		var link = item.getElementsByTagName("link")[0].textContent;
 

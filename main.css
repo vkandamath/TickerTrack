@@ -68,16 +68,23 @@ td {
 }
 
 .newslink {
-  color: red;
   margin-left: 30px;
   margin-right: 30px;
 }
 
-.newslink:hover {
-  color: red;
+.newslink:link {
+  color: green;
+}
+
+.newslink:link:hover {
+  color: green;
 }
 
 .newslink:visited {
+  color: white;
+}
+
+.newslink:visited:hover {
   color: white;
 }
 
@@ -93,7 +100,6 @@ td {
 }
 
 .navbar-header {
-  text-align: center;
   width: 100%;
   padding: 15px;
 }
