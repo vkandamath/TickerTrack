@@ -125,3 +125,16 @@ td {
   background: none;
 }
 
+svg {
+  top: 3px;
+  position: relative;
+}
+
+.svg-span {
+  margin-right: 20px;
+}
+
+#legend {
+  float: right;
+}
+
