@@ -21,7 +21,7 @@ html, body {
 .stocks-container {
   overflow-y: auto;
   display: block;
-  height: calc(100vh - 50px);
+  height: calc(100vh - 53px - 50px);
 }
 
 #stocks {

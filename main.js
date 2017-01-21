@@ -21,13 +21,13 @@ window.onload = function() {
 
 			}
 
-					 $('.marquee').marquee({
-		    duration: 10000,
-		    startVisible: true,
-		    duplicated: true,
-		    delayBeforeStart: 0,
-		    pauseOnHover: true
-		  });
+			$('.marquee').marquee({
+			    duration: 10000,
+			    startVisible: true,
+			    duplicated: true,
+			    delayBeforeStart: 0,
+			    pauseOnHover: true
+			});
 		}
 	});
 
@@ -54,6 +54,10 @@ window.onload = function() {
 
 	$("#submit-stock").click(function(){
 		addStock();
+	});
+
+	$("#about-button").click(function() {
+		window.location.href = 'about.html';
 	});
 
 	var port = chrome.runtime.connect({name: "messages"});
