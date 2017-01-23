@@ -36,7 +36,7 @@ window.onload = function() {
 
 		var stock = $(this).eq($(this).index()).text();
 		
-		// remove td 
+		// remove tr
 		$(this).parent().remove();
 
 		// removes stock from memory

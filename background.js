@@ -36,7 +36,7 @@ function fetchData(port) {
 			// define closure to ensure that correct key is used for get request
 			(function (key) {
 				$.get(url, function(data, status) {
-					console.log("Sending get for: " + key);
+					//console.log("Sending get for: " + key);
 					
 					if (status == "success") {
 
@@ -48,7 +48,11 @@ function fetchData(port) {
 						var storedBuildDate = new Date(stocks[key].lastUpdatedOn);
 
 						if (latestBuildDate > storedBuildDate) {
-							console.log("Update stock: " + key);
+
+							var date = new Date();
+							var currTime = Math.round(date.getTime()/(1000*60*60*24*365));
+
+							console.log("Updating stock: " + key + " at " + currTime);
 							//update last update datetime
 							stocks[key].lastUpdatedOn = latestBuildDateString;
 							
@@ -95,3 +99,5 @@ function getMostRecentNews(xmlItems) {
 
 	return latestNews;
 }
+
+
