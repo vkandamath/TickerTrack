@@ -62,10 +62,19 @@ window.onload = function() {
 
 	var port = chrome.runtime.connect({name: "messages"});
 
+	port.onDisconnect.addListener(function() {
+		console.log("background script disconnected!")
+	});
+
 	port.onMessage.addListener(function(msg) {
 		if (msg.message == "update stock") {
 			var stockToUpdate = msg.stock;
 
+			var dt = new Date();
+			var utcDate = dt.toUTCString();
+			console.log('%c Updating stock: ' + stockToUpdate + ' at ' + utcDate, 'background: gray; color: blue');
+			
+			
 			//retrieve updated news
 			chrome.storage.local.get("stocks", function(result) {
 				var stockObj = result.stocks[stockToUpdate];

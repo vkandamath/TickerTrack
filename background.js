@@ -10,7 +10,7 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 	chrome.runtime.onConnect.addListener(function(port) {
 
 		// delay time in ms
-		var delayTime = 3000;
+		var delayTime = 5000;
 
 		// start polling yahoo
 		setInterval(fetchData, delayTime, port);
@@ -33,11 +33,15 @@ function fetchData(port) {
 			var url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + key + "&region=US&lang=en-US";
 			//var url = "http://localhost:1234/" + key + ".xml";
 
+			var startTime = new Date();
+			//console.log(".......Before get request for " + key + ": " + (new Date()).toUTCString());
 			// define closure to ensure that correct key is used for get request
 			(function (key) {
 				$.get(url, function(data, status) {
-					//console.log("Sending get for: " + key);
-					
+					console.log("Sent get for: " + key + " ========================================");
+					console.log("......Before get request for: " + key + ": " + startTime);
+					console.log("......After get request for: " + key + ": " + (new Date()));
+
 					if (status == "success") {
 
 						var xmlChannel = data.firstChild.firstChild;
@@ -47,12 +51,16 @@ function fetchData(port) {
 
 						var storedBuildDate = new Date(stocks[key].lastUpdatedOn);
 
+						console.log("Old date: " + storedBuildDate);
+						console.log("New date: " + latestBuildDate);
+
 						if (latestBuildDate > storedBuildDate) {
+							console.log('%c Updating stock: ' + key + ' at ' + (new Date()), 'background: gray; color: blue');
 
-							var date = new Date();
-							var currTime = Math.round(date.getTime()/(1000*60*60*24*365));
+							//var date = new Date();
+							//var currTime = Math.round(date.getTime()/(1000*60*60*24*365));
 
-							console.log("Updating stock: " + key + " at " + currTime);
+							//console.log("Updating stock: " + key + " at " + currTime);
 							//update last update datetime
 							stocks[key].lastUpdatedOn = latestBuildDateString;
 							
@@ -62,6 +70,9 @@ function fetchData(port) {
 
 							// send message to client to update its stock news
 							port.postMessage({message: "update stock", stock: key});
+						}
+						else if (latestBuildDate < storedBuildDate) {
+							throw new Error("new build date less than old date");
 						}
 
 					}
