@@ -153,6 +153,12 @@ function addStock() {
 		return;
 	}
 
+	// validate stock symbol
+	if (!/^[a-z0-9]+$/i.test($("#enter-stock").val())) {
+		alert("Invalid stock symbol");
+		return;
+	}
+
 	var stock = $("#enter-stock").val().toLowerCase();
 	$("#enter-stock").val("");
 
@@ -195,7 +201,6 @@ function addStock() {
 						chrome.storage.local.set({"stocks": existingStocks});
 
 						var stockHTML = "<tr class='stock-row'><td class='stock-symbol'><span>" + stock.toUpperCase() + "</span></td><td class='marquee-col' id='news-" + stock.toLowerCase() + "'><div class='marquee'>";
-
 
 						for (var i = 0; i < latestNews.length; i++) {
 							var newsLink = latestNews[i];

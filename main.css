@@ -37,7 +37,8 @@ html, body {
   background-color: #5cb85c;
   color: white;
   text-align: center;
-  width: 107px;
+  width: 125px;
+  /*width: 107px;*/
 }
 
 .stock-symbol:hover {
