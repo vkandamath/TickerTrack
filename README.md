@@ -1,4 +1,4 @@
-# stock-news-aggregator-extension
+# TickerTrack
 A chrome extension that aggregates financial news from Yahoo Finance in realtime. This extension allows users to add and delete stocks as they wish. Links in red are new. Links in white have been visited.
 
 ## Get up and running
