@@ -176,32 +176,66 @@ function addStock() {
 
 	$.get(url, function(data, status) {
 		if (status == "success") {
-			var xmlChannel = data.firstChild.firstChild;
-			var xmlTitle = xmlChannel.firstChild;
+			var xmlChannel = data.firstChild.getElementsByTagName("channel")[0];
+			var xmlItems = data.getElementsByTagName("item");
 
-			if (xmlTitle.textContent == "Yahoo! Finance: RSS feed not found") {
-				alert("Invalid stock symbol");
+			console.log(xmlChannel);
+
+			// checks if there are any new articles to see if stock symbol is valid
+			if (xmlItems.length == 0) {
+				alert("Invalid stock symbol!");
 				return;
 			}
-			else {
-				var xmlItems = xmlChannel.getElementsByTagName("item");
-				var lastUpdatedOn = xmlChannel.getElementsByTagName("lastBuildDate")[0].textContent;
 
-				// store stock
-				chrome.storage.local.get("stocks", function(result) {
-					console.log("storing");
-					if (result.stocks == undefined) {
+			var lastUpdatedOn = xmlChannel.getElementsByTagName("lastBuildDate")[0].textContent;
 
-						var existingStocks = {}
+			// store stock
+			chrome.storage.local.get("stocks", function(result) {
+				console.log("storing");
+				if (result.stocks == undefined) {
+
+					var existingStocks = {}
+
+					var latestNews = getMostRecentNews(xmlItems);
+
+					existingStocks[stock] = new Stock(stock, lastUpdatedOn, latestNews);
+
+					chrome.storage.local.set({"stocks": existingStocks});
+
+					var stockHTML = "<tr class='stock-row'><td class='stock-symbol'><span>" + stock.toUpperCase() + "</span></td><td class='marquee-col' id='news-" + stock.toLowerCase() + "'><div class='marquee'>";
+
+					for (var i = 0; i < latestNews.length; i++) {
+						var newsLink = latestNews[i];
+						stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + (i+1) + ") " + newsLink.title + "</a>";
+					}
+
+					stockHTML += "</marquee></td></tr>";
+					$("#stocks").prepend(stockHTML);
+
+					$('#news-' + stock + ' .marquee').marquee({
+						duration: 10000,
+						startVisible: true,
+						duplicated: true,
+						delayBeforeStart: 0,
+						pauseOnHover: true
+					});
+
+
+				}
+				else {
+					if (!(stock in result.stocks)) {
+
+						console.log(xmlItems);
 
 						var latestNews = getMostRecentNews(xmlItems);
 
-						existingStocks[stock] = new Stock(stock, lastUpdatedOn, latestNews);
+						// store stock
+						result.stocks[stock] = new Stock(stock, lastUpdatedOn, latestNews);
 
-						chrome.storage.local.set({"stocks": existingStocks});
+						chrome.storage.local.set({"stocks": result.stocks});
 
 						var stockHTML = "<tr class='stock-row'><td class='stock-symbol'><span>" + stock.toUpperCase() + "</span></td><td class='marquee-col' id='news-" + stock.toLowerCase() + "'><div class='marquee'>";
-
+							
 						for (var i = 0; i < latestNews.length; i++) {
 							var newsLink = latestNews[i];
 							stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + (i+1) + ") " + newsLink.title + "</a>";
@@ -218,50 +252,15 @@ function addStock() {
 							pauseOnHover: true
 						});
 
-
+							
 					}
 					else {
-						if (!(stock in result.stocks)) {
-
-							console.log(xmlItems);
-
-							var latestNews = getMostRecentNews(xmlItems);
-
-							// store stock
-							result.stocks[stock] = new Stock(stock, lastUpdatedOn, latestNews);
-
-							chrome.storage.local.set({"stocks": result.stocks});
-
-							var stockHTML = "<tr class='stock-row'><td class='stock-symbol'><span>" + stock.toUpperCase() + "</span></td><td class='marquee-col' id='news-" + stock.toLowerCase() + "'><div class='marquee'>";
-							
-
-							for (var i = 0; i < latestNews.length; i++) {
-								var newsLink = latestNews[i];
-								stockHTML += "<a target='_blank' class='newslink' href='" + newsLink.link + "'>" + (i+1) + ") " + newsLink.title + "</a>";
-							}
-
-							stockHTML += "</marquee></td></tr>";
-							$("#stocks").prepend(stockHTML);
-
-							$('#news-' + stock + ' .marquee').marquee({
-								duration: 10000,
-								startVisible: true,
-								duplicated: true,
-								delayBeforeStart: 0,
-								pauseOnHover: true
-							});
-
-							
-						}
-						else {
-							alert("Stock symbol already displayed");
-						}
+						alert("Stock symbol already displayed");
 					}
-
-				});
-}
-}
-});
+				}
+			});
+		}
+	});
 }
 
 // takes in list of item nodes, return list of tuples(dictionary) with article title and link
